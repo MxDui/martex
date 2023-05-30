@@ -3,18 +3,23 @@ import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
 import { Transition } from "@headlessui/react";
+import AceEditor from "react-ace";
+
+import "ace-builds/src-noconflict/theme-monokai";
+import "ace-builds/src-noconflict/mode-latex";
 
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
   const [name, setName] = useState("");
   const [isOpen, setIsOpen] = useState(true);
+  const [latexCode, setLatexCode] = useState("");
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
     setGreetMsg(await invoke("greet", { name }));
   }
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className=" min-h-screen bg-gray-100 w-full grid grid-cols-2">
       <Transition
         show={isOpen}
         enter="transition-all duration-500"
@@ -24,8 +29,18 @@ function App() {
         leaveFrom="opacity-100 transform translate-x-0"
         leaveTo="opacity-0 transform translate-x-[-100%]"
       >
-        <div className="w-1/2 h-full bg-white overflow-auto p-4">
-          <pre className="text-sm text-gray-800"></pre>
+        <div className=" h-full bg-gray-100 ">
+          <AceEditor
+            width="100%"
+            height="100%"
+            mode="latex"
+            theme="monokai"
+            onChange={setLatexCode}
+            name="UNIQUE_ID_OF_DIV"
+            editorProps={{ $blockScrolling: true }}
+            value={latexCode}
+            className="w-full h-full"
+          />
         </div>
       </Transition>
 
@@ -44,13 +59,6 @@ function App() {
           </div>
         </div>
       </Transition>
-
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="absolute top-4 right-4 p-2 bg-blue-500 text-white rounded"
-      >
-        Toggle View
-      </button>
     </div>
   );
 }
