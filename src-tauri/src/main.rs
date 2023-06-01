@@ -1,6 +1,5 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use std::fs::File;
 use std::io::Write;
 use std::process::Command as ProcessCommand;
 use tempfile::NamedTempFile;
@@ -10,29 +9,20 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
-fn main() {
-    tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
-}
-
-#[derive(serde::Deserialize)]
-struct CompileLatexArgs {
-    code: String,
-}
 
 #[tauri::command]
-fn compile_latex(args: CompileLatexArgs) -> Result<String, String> {
+fn compile(code: String) -> Result<String, String> {
     // Create a temporary file with the LaTeX code
+    println!("Compiling LaTeX code: {}", code);
     let mut temp_file =
         NamedTempFile::new().map_err(|e| format!("Failed to create temp file: {}", e))?;
-    writeln!(temp_file, "{}", args.code)
+    writeln!(temp_file, "{}", code)
         .map_err(|e| format!("Failed to write to temp file: {}", e))?;
 
     // Compile the LaTeX code with latexmk
     let output = ProcessCommand::new("latexmk")
         .arg("-pdf")
+        .arg("-jobname=compiled2")
         .arg(temp_file.path())
         .output()
         .map_err(|e| format!("Failed to run latexmk: {}", e))?;
@@ -45,7 +35,7 @@ fn compile_latex(args: CompileLatexArgs) -> Result<String, String> {
     }
 
     // Read the resulting PDF file
-    let pdf_path = temp_file.path().with_extension("pdf");
+    let pdf_path = temp_file.path().with_file_name("compiled2.pdf");
     let pdf_bytes =
         std::fs::read(&pdf_path).map_err(|e| format!("Failed to read PDF file: {}", e))?;
 
@@ -56,4 +46,12 @@ fn compile_latex(args: CompileLatexArgs) -> Result<String, String> {
 
     // Return the PDF bytes as a base64 encoded string
     Ok(base64::encode(pdf_bytes))
+}
+
+
+fn main() {
+    tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![greet, compile])
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
 }

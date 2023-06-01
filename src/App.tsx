@@ -16,7 +16,11 @@ function App() {
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke("greet", { name }));
+    const response = await invoke("greet", { name: "world" });
+    const response2 = await invoke("compile", { code: latexCode });
+    setGreetMsg(response as string);
+    console.log(response2);
+    console.log(response as string);
   }
   return (
     <div className=" min-h-screen bg-gray-100 w-full grid grid-cols-2">
@@ -42,23 +46,20 @@ function App() {
             className="w-full h-full"
           />
         </div>
+        <button onClick={() => greet()} className="bg-blue-500 p-2">
+          Compile
+        </button>
       </Transition>
-
-      <Transition
-        show={!isOpen}
-        enter="transition-all duration-500"
-        enterFrom="opacity-0 transform translate-x-[100%]"
-        enterTo="opacity-100 transform translate-x-0"
-        leave="transition-all duration-500"
-        leaveFrom="opacity-100 transform translate-x-0"
-        leaveTo="opacity-0 transform translate-x-[100%]"
-      >
-        <div className="w-1/2 h-full bg-white overflow-auto p-4">
-          <div className="text-sm text-gray-800">
-            {/* Your LaTeX output goes here */}
-          </div>
+      <div className="h-full bg-gray-100">
+        <div className="flex flex-col justify-center items-center h-full">
+          <img
+            src={reactLogo}
+            className="h-40 pointer-events-none"
+            alt="logo"
+          />
+          <h1 className="text-4xl font-bold">{greetMsg}</h1>
         </div>
-      </Transition>
+      </div>
     </div>
   );
 }
