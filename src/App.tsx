@@ -9,25 +9,27 @@ import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/mode-latex";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
-  const [isOpen, setIsOpen] = useState(true);
-  const [latexCode, setLatexCode] = useState("");
-  const [pdfUrl, setPdfUrl] = useState(null);
-  const [compileTimeout, setCompileTimeout] = useState(null);
+  const [greetMsg, setGreetMsg] = useState<string>("");
+  const [name, setName] = useState<string>("");
+  const [isOpen, setIsOpen] = useState<boolean>(true);
+  const [latexCode, setLatexCode] = useState<string>("");
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [compileTimeout, setCompileTimeout] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
   async function compile() {
-    const response2 = await invoke("compile", { code: latexCode });
-    const uint8Array = base64ToUint8Array(response2);
-    const blob = new Blob([uint8Array], { type: "application/pdf" });
-    const url = URL.createObjectURL(blob);
+    const response2: string = await invoke("compile", { code: latexCode });
+    const uint8Array: Uint8Array = base64ToUint8Array(response2);
+    const blob: Blob = new Blob([uint8Array], { type: "application/pdf" });
+    const url: string = URL.createObjectURL(blob);
     setPdfUrl(url);
   }
 
-  function base64ToUint8Array(base64) {
-    const binary_string = window.atob(base64);
-    const len = binary_string.length;
-    const bytes = new Uint8Array(len);
+  function base64ToUint8Array(base64: string): Uint8Array {
+    const binary_string: string = window.atob(base64);
+    const len: number = binary_string.length;
+    const bytes: Uint8Array = new Uint8Array(len);
     for (let i = 0; i < len; i++) {
       bytes[i] = binary_string.charCodeAt(i);
     }
@@ -49,7 +51,7 @@ function App() {
 
   useEffect(() => {
     if (latexCode !== "" && compileTimeout === null) {
-      const timeoutId = setTimeout(() => {
+      const timeoutId: NodeJS.Timeout = setTimeout(() => {
         compile();
         setCompileTimeout(null);
       }, 500);
@@ -61,7 +63,7 @@ function App() {
 
   const debouncedCompile = debounce(compile, 500);
 
-  const handleLatexCodeChange = (code) => {
+  const handleLatexCodeChange = (code: string) => {
     setLatexCode(code);
     debouncedCompile();
   };
