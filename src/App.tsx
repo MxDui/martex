@@ -13,14 +13,13 @@ function App() {
   const [name, setName] = useState("");
   const [isOpen, setIsOpen] = useState(true);
   const [latexCode, setLatexCode] = useState("");
+  const [pdf, setPdf] = useState("");
 
-  async function greet() {
+  async function compile() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    const response = await invoke("greet", { name: "world" });
     const response2 = await invoke("compile", { code: latexCode });
-    setGreetMsg(response as string);
+    setPdf(response2 as string);
     console.log(response2);
-    console.log(response as string);
   }
   return (
     <div className=" min-h-screen bg-gray-100 w-full grid grid-cols-2">
@@ -46,18 +45,13 @@ function App() {
             className="w-full h-full"
           />
         </div>
-        <button onClick={() => greet()} className="bg-blue-500 p-2">
+        <button onClick={() => compile()} className="bg-blue-500 p-2">
           Compile
         </button>
       </Transition>
       <div className="h-full bg-gray-100">
         <div className="flex flex-col justify-center items-center h-full">
-          <img
-            src={reactLogo}
-            className="h-40 pointer-events-none"
-            alt="logo"
-          />
-          <h1 className="text-4xl font-bold">{greetMsg}</h1>
+          <h1 className="text-4xl font-bold text-black">{pdf}</h1>
         </div>
       </div>
     </div>

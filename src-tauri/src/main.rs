@@ -19,10 +19,15 @@ fn compile(code: String) -> Result<String, String> {
     writeln!(temp_file, "{}", code)
         .map_err(|e| format!("Failed to write to temp file: {}", e))?;
 
+    let output_directory = temp_file.path().parent().unwrap();
+    let job_name = "compiled2";
+    let output_pdf_path = output_directory.join(format!("{}.pdf", job_name));
+
     // Compile the LaTeX code with latexmk
     let output = ProcessCommand::new("latexmk")
         .arg("-pdf")
         .arg("-jobname=compiled2")
+        .current_dir(&output_directory)
         .arg(temp_file.path())
         .output()
         .map_err(|e| format!("Failed to run latexmk: {}", e))?;
@@ -35,18 +40,19 @@ fn compile(code: String) -> Result<String, String> {
     }
 
     // Read the resulting PDF file
-    let pdf_path = temp_file.path().with_file_name("compiled2.pdf");
-    let pdf_bytes =
-        std::fs::read(&pdf_path).map_err(|e| format!("Failed to read PDF file: {}", e))?;
+    let pdf_bytes = std::fs::read(&output_pdf_path)
+        .map_err(|e| format!("Failed to read PDF file: {}", e))?;
 
     // Delete the temporary files
     std::fs::remove_file(temp_file.path())
         .map_err(|e| format!("Failed to delete temp file: {}", e))?;
-    std::fs::remove_file(&pdf_path).map_err(|e| format!("Failed to delete PDF file: {}", e))?;
+    std::fs::remove_file(&output_pdf_path)
+        .map_err(|e| format!("Failed to delete PDF file: {}", e))?;
 
     // Return the PDF bytes as a base64 encoded string
     Ok(base64::encode(pdf_bytes))
 }
+
 
 
 fn main() {
