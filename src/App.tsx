@@ -1,9 +1,9 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
+import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import "./App.css";
 import { Transition } from "@headlessui/react";
 import AceEditor from "react-ace";
+import { Document, Page, pdfjs } from "react-pdf";
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/mode-latex";
@@ -13,14 +13,59 @@ function App() {
   const [name, setName] = useState("");
   const [isOpen, setIsOpen] = useState(true);
   const [latexCode, setLatexCode] = useState("");
-  const [pdf, setPdf] = useState("");
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [compileTimeout, setCompileTimeout] = useState(null);
 
   async function compile() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
     const response2 = await invoke("compile", { code: latexCode });
-    setPdf(response2 as string);
-    console.log(response2);
+    const uint8Array = base64ToUint8Array(response2);
+    const blob = new Blob([uint8Array], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    setPdfUrl(url);
   }
+
+  function base64ToUint8Array(base64) {
+    const binary_string = window.atob(base64);
+    const len = binary_string.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes;
+  }
+  function debounce(func: (...args: any[]) => any, wait: number) {
+    let timeout: NodeJS.Timeout;
+
+    return function executedFunction(...args: any[]) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  useEffect(() => {
+    if (latexCode !== "" && compileTimeout === null) {
+      const timeoutId = setTimeout(() => {
+        compile();
+        setCompileTimeout(null);
+      }, 500);
+
+      setCompileTimeout(timeoutId);
+    }
+    return () => clearTimeout(compileTimeout!);
+  }, [latexCode]);
+
+  const debouncedCompile = debounce(compile, 500);
+
+  const handleLatexCodeChange = (code) => {
+    setLatexCode(code);
+    debouncedCompile();
+  };
+
   return (
     <div className=" min-h-screen bg-gray-100 w-full grid grid-cols-2">
       <Transition
@@ -38,7 +83,7 @@ function App() {
             height="100%"
             mode="latex"
             theme="monokai"
-            onChange={setLatexCode}
+            onChange={handleLatexCodeChange}
             name="UNIQUE_ID_OF_DIV"
             editorProps={{ $blockScrolling: true }}
             value={latexCode}
@@ -51,7 +96,15 @@ function App() {
       </Transition>
       <div className="h-full bg-gray-100">
         <div className="flex flex-col justify-center items-center h-full">
-          <h1 className="text-4xl font-bold text-black">{pdf}</h1>
+          {pdfUrl && (
+            <Document
+              file={pdfUrl}
+              onError={(err) => console.log(err)}
+              onLoadError={(err) => console.log(err)}
+            >
+              <Page pageNumber={1} />
+            </Document>
+          )}
         </div>
       </div>
     </div>
