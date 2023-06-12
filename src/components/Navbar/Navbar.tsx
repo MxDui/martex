@@ -1,15 +1,22 @@
 import React, { useState } from "react";
 import { Menu as HeadlessMenu, Transition } from "@headlessui/react";
-import { IoMdAdd, IoMdSave, IoMdArrowDropdown } from "react-icons/io";
+import {
+  IoMdAdd,
+  IoMdSave,
+  IoMdArrowDropdown,
+  IoIosApps,
+} from "react-icons/io";
 
 const Navbar = ({
   fileName,
   handleNewFile,
   handleSaveFile,
+  compile,
 }: {
-  fileName: string;
+  fileName: string | undefined;
   handleNewFile: () => void;
   handleSaveFile: () => void;
+  compile: () => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -19,6 +26,12 @@ const Navbar = ({
         {fileName || "No File Selected"}
       </h1>
       <div className="space-x-4">
+        <button
+          className="px-3 py-2 bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onClick={compile}
+        >
+          <IoIosApps className="inline-block mr-1" /> Compile
+        </button>
         <button
           className="px-3 py-2 bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           onClick={handleNewFile}

@@ -16,14 +16,16 @@ const initialTree: ITreeNode = {
     },
   ],
 };
-const TreeFile: React.FC = () => {
+const TreeFile: React.FC<{ onFileSelect: (file: ITreeNode) => void }> = ({
+  onFileSelect,
+}) => {
   const [selectedNode, setSelectedNode] = useState<ITreeNode | null>(null);
   const [tree, setTree] = useState(initialTree);
 
   const handleNodeClick = (node: ITreeNode) => {
     setSelectedNode(node);
+    onFileSelect(node);
   };
-
   const handleNodeAdd = (parentId: number, node: Omit<ITreeNode, "id">) => {
     const newNode = { id: Math.random(), ...node };
     const addNode = (tree: ITreeNode): ITreeNode => {

@@ -9,11 +9,14 @@ import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/mode-latex";
 import TreeFile from "./components/Files/FileTree";
 import Navbar from "./components/Navbar/Navbar";
+import { ITreeNode } from "./components/Files/FileNode";
 
 function App() {
   const [greetMsg, setGreetMsg] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [isOpen, setIsOpen] = useState<boolean>(true);
+  const [currentFile, setCurrentFile] = useState<ITreeNode | null>(null);
+
   const [latexCode, setLatexCode] = useState<string>("");
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [compileTimeout, setCompileTimeout] = useState<NodeJS.Timeout | null>(
@@ -51,34 +54,56 @@ function App() {
     };
   }
 
-  useEffect(() => {
-    if (latexCode !== "" && compileTimeout === null) {
-      const timeoutId: NodeJS.Timeout = setTimeout(() => {
-        compile();
-        setCompileTimeout(null);
-      }, 500);
+  // useEffect(() => {
+  //   if (latexCode !== "" && compileTimeout === null) {
+  //     const timeoutId: NodeJS.Timeout = setTimeout(() => {
+  //       compile();
+  //       setCompileTimeout(null);
+  //     }, 5000);
 
-      setCompileTimeout(timeoutId);
-    }
-    return () => clearTimeout(compileTimeout!);
-  }, [latexCode]);
+  //     setCompileTimeout(timeoutId);
+  //   }
+  //   return () => clearTimeout(compileTimeout!);
+  // }, [latexCode]);
 
   const debouncedCompile = debounce(compile, 500);
+  const handleNewFile = () => {
+    // generate a new file
+    const newFile: ITreeNode = {
+      id: Math.random(),
+      name: "New File.tex",
+    };
 
+    // insert the new file into the tree
+    // use your logic to add a file to the tree
+  };
+
+  const handleSaveFile = () => {
+    // save the current file
+    // you can make use of the Tauri API to save the file to disk
+    // for the sake of simplicity in this example, we'll just log it to console
+    if (currentFile) {
+      console.log(`Saving file ${currentFile.name}`);
+    }
+  };
   const handleLatexCodeChange = (code: string) => {
     setLatexCode(code);
     debouncedCompile();
+  };
+  const handleFileSelect = (file: ITreeNode) => {
+    setCurrentFile(file);
   };
 
   return (
     <>
       <Navbar
-        fileName={name}
-        handleNewFile={() => {}}
-        handleSaveFile={() => {}}
+        fileName={currentFile?.name}
+        compile={compile}
+        handleNewFile={handleNewFile}
+        handleSaveFile={handleSaveFile}
       />
-      <div className=" min-h-screen bg-gray-100 w-full grid grid-cols-[1fr,2fr,1fr] ">
-        <TreeFile />
+      <div className=" min-h-screen bg-gray-100 w-full grid grid-cols-[1fr,2fr,1fr] z-0">
+        <TreeFile onFileSelect={handleFileSelect} />
         <Transition
           show={isOpen}
           enter="transition-all duration-500"
@@ -101,12 +126,9 @@ function App() {
               className="w-full h-full"
             />
           </div>
-          <button onClick={() => compile()} className="bg-blue-500 p-2">
-            Compile
-          </button>
         </Transition>
         <div className="h-full bg-gray-100">
-          <div className="flex flex-col justify-center items-center h-full">
+          <div className="flex flex-col justify-center items-center h-screen overflow-y-scroll z-2">
             {pdfUrl && (
               <Document
                 file={pdfUrl}
