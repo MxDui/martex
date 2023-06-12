@@ -8,6 +8,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/mode-latex";
 import TreeFile from "./components/Files/FileTree";
+import Navbar from "./components/Navbar/Navbar";
 
 function App() {
   const [greetMsg, setGreetMsg] = useState<string>("");
@@ -70,48 +71,55 @@ function App() {
   };
 
   return (
-    <div className=" min-h-screen bg-gray-100 w-full grid grid-cols-[1fr,2fr,1fr] ">
-      <TreeFile />
-      <Transition
-        show={isOpen}
-        enter="transition-all duration-500"
-        enterFrom="opacity-0 transform translate-x-[-100%]"
-        enterTo="opacity-100 transform translate-x-0"
-        leave="transition-all duration-500"
-        leaveFrom="opacity-100 transform translate-x-0"
-        leaveTo="opacity-0 transform translate-x-[-100%]"
-      >
-        <div className=" h-full bg-gray-100 ">
-          <AceEditor
-            width="100%"
-            height="100%"
-            mode="latex"
-            theme="monokai"
-            onChange={handleLatexCodeChange}
-            name="UNIQUE_ID_OF_DIV"
-            editorProps={{ $blockScrolling: true }}
-            value={latexCode}
-            className="w-full h-full"
-          />
-        </div>
-        <button onClick={() => compile()} className="bg-blue-500 p-2">
-          Compile
-        </button>
-      </Transition>
-      <div className="h-full bg-gray-100">
-        <div className="flex flex-col justify-center items-center h-full">
-          {pdfUrl && (
-            <Document
-              file={pdfUrl}
-              onError={(err) => console.log(err)}
-              onLoadError={(err) => console.log(err)}
-            >
-              <Page pageNumber={1} />
-            </Document>
-          )}
+    <>
+      <Navbar
+        fileName={name}
+        handleNewFile={() => {}}
+        handleSaveFile={() => {}}
+      />
+      <div className=" min-h-screen bg-gray-100 w-full grid grid-cols-[1fr,2fr,1fr] ">
+        <TreeFile />
+        <Transition
+          show={isOpen}
+          enter="transition-all duration-500"
+          enterFrom="opacity-0 transform translate-x-[-100%]"
+          enterTo="opacity-100 transform translate-x-0"
+          leave="transition-all duration-500"
+          leaveFrom="opacity-100 transform translate-x-0"
+          leaveTo="opacity-0 transform translate-x-[-100%]"
+        >
+          <div className=" h-full bg-gray-100 ">
+            <AceEditor
+              width="100%"
+              height="100%"
+              mode="latex"
+              theme="monokai"
+              onChange={handleLatexCodeChange}
+              name="UNIQUE_ID_OF_DIV"
+              editorProps={{ $blockScrolling: true }}
+              value={latexCode}
+              className="w-full h-full"
+            />
+          </div>
+          <button onClick={() => compile()} className="bg-blue-500 p-2">
+            Compile
+          </button>
+        </Transition>
+        <div className="h-full bg-gray-100">
+          <div className="flex flex-col justify-center items-center h-full">
+            {pdfUrl && (
+              <Document
+                file={pdfUrl}
+                onError={(err) => console.log(err)}
+                onLoadError={(err) => console.log(err)}
+              >
+                <Page pageNumber={1} />
+              </Document>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
