@@ -7,6 +7,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/mode-latex";
+import TreeFile from "./components/Files/FileTree";
 
 function App() {
   const [greetMsg, setGreetMsg] = useState<string>("");
@@ -69,7 +70,8 @@ function App() {
   };
 
   return (
-    <div className=" min-h-screen bg-gray-100 w-full grid grid-cols-2">
+    <div className=" min-h-screen bg-gray-100 w-full grid grid-cols-[1fr,2fr,1fr] ">
+      <TreeFile />
       <Transition
         show={isOpen}
         enter="transition-all duration-500"
